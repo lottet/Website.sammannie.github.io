@@ -442,30 +442,32 @@
       <div class="section-label">Dela era minnen</div>
       <h2 class="section-title">Gästgalleri</h2>
       <div class="divider"></div>
-      <p style="font-size:.9rem;color:var(--muted);margin-bottom:2rem;line-height:1.8;">
-        Har ni fångat ett ögonblick ni vill dela? Ladda upp era bilder här så syns de direkt i galleriet nedan — för alla att se.
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:2.5rem;line-height:1.8;max-width:560px;">
+        Har ni fångat ett magiskt ögonblick? Dela era bilder med oss och alla andra gäster i vårt gemensamma album på Google Photos.
       </p>
 
-      <div class="upload-zone" id="upload-zone"
-        onclick="document.getElementById('file-input').click()"
-        ondragover="event.preventDefault(); this.style.borderColor='var(--gold)'"
-        ondragleave="this.style.borderColor='var(--border)'"
-        ondrop="handleDrop(event)">
-        <div class="upload-icon">📷</div>
-        <h4>Släpp dina bilder här</h4>
-        <p>JPEG, PNG, HEIC — upp till 10 bilder åt gången</p>
-        <button class="btn-browse" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Välj filer</button>
-      </div>
-      <input type="file" id="file-input" accept="image/*" multiple style="display:none" onchange="handleFileSelect(this)"/>
-
-      <div id="uploading-msg" style="display:none;" class="uploading-msg">Laddar upp dina bilder… vänta lite ✦</div>
-      <div class="photo-grid" id="photo-grid"></div>
-      <div class="empty-gallery" id="empty-gallery">
-        <p>🌸</p>
-        <p>Inga bilder ännu — bli den första att dela ett minne!</p>
+      <div style="text-align:center;padding:3rem 2rem;background:var(--cream);border:1px solid var(--border);border-radius:6px;max-width:500px;">
+        <div style="font-size:3rem;margin-bottom:1rem;">📸</div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--forest);margin-bottom:.8rem;">Dela dina bilder</h3>
+        <p style="font-size:.9rem;color:var(--muted);line-height:1.8;margin-bottom:2rem;">
+          Klicka på knappen nedan för att öppna vårt delade album.<br>Där kan du ladda upp och se alla gästernas bilder.
+        </p>
+        <a href="https://photos.app.goo.gl/968C8HgZnhHMx71VA" target="_blank"
+          style="display:inline-block;padding:.9rem 2.2rem;background:var(--forest);color:#F5ECD7;
+          text-decoration:none;border-radius:3px;font-family:'Jost',sans-serif;
+          font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;
+          transition:background .2s;"
+          onmouseover="this.style.background='#3A5440'"
+          onmouseout="this.style.background='var(--forest)'">
+          Öppna albumet ✦
+        </a>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:1.2rem;letter-spacing:.05em;">
+          Öppnas i Google Photos — fungerar på både mobil och dator
+        </p>
       </div>
     </div>
   </section>
+
 
   <!-- FOOTER -->
   <footer>

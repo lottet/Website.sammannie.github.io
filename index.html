@@ -24,9 +24,12 @@
     /* NAV */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(42,61,46,0.92); backdrop-filter: blur(6px);
-      display: flex; justify-content: center; gap: 2.5rem;
-      padding: 1rem 2rem;
+      background: rgba(42,61,46,0.95); backdrop-filter: blur(6px);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .9rem 1.5rem;
+    }
+    .nav-links {
+      display: flex; gap: 2rem; align-items: center;
     }
     nav a {
       color: #E8D8B8; text-decoration: none;
@@ -35,6 +38,39 @@
       transition: color .2s;
     }
     nav a:hover { color: var(--gold-lt); }
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; font-style: italic; color: #C8B89A;
+      letter-spacing: .06em; white-space: nowrap;
+    }
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; padding: .3rem; background: none; border: none;
+    }
+    .hamburger span {
+      display: block; width: 24px; height: 2px;
+      background: #E8D8B8; border-radius: 2px;
+      transition: all .3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    @media (max-width: 640px) {
+      .hamburger { display: flex; }
+      .nav-links {
+        position: fixed; top: 52px; left: 0; right: 0;
+        background: rgba(42,61,46,0.98);
+        flex-direction: column; gap: 0;
+        max-height: 0; overflow: hidden;
+        transition: max-height .35s ease;
+      }
+      .nav-links.open { max-height: 400px; }
+      .nav-links a {
+        padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,.07);
+        font-size: .85rem;
+      }
+    }
 
     /* HERO */
     #home {
@@ -256,11 +292,17 @@
 
   <!-- NAV -->
   <nav>
-    <a href="#home">Hem</a>
-    <a href="#story">Vår Historia</a>
-    <a href="#details">Information</a>
-    <a href="#rsvp">OSA</a>
-    <a href="#photos">Bilder</a>
+    <span class="nav-brand">Sam &amp; Annie</span>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Meny">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="nav-links">
+      <a href="#home" onclick="closeMenu()">Hem</a>
+      <a href="#story" onclick="closeMenu()">Vår Historia</a>
+      <a href="#details" onclick="closeMenu()">Information</a>
+      <a href="#rsvp" onclick="closeMenu()">OSA</a>
+      <a href="#photos" onclick="closeMenu()">Bilder</a>
+    </div>
   </nav>
 
   <!-- HERO -->
@@ -561,6 +603,93 @@
       if (e.dataTransfer.files.length) processFiles(e.dataTransfer.files);
     }
     loadPhotos();
+
+    function toggleMenu() {
+      document.getElementById('nav-links').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+    function closeMenu() {
+      document.getElementById('nav-links').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+    function checkPassword() {
+      const val = document.getElementById('pw-input').value;
+      if (val === 'Elton') {
+        document.getElementById('password-screen').style.display = 'none';
+        document.body.style.overflow = '';
+      } else {
+        document.getElementById('pw-error').style.display = 'block';
+        document.getElementById('pw-input').value = '';
+        document.getElementById('pw-input').focus();
+      }
+    }
+    // Block scroll until password entered
+    if (!sessionStorage.getItem('unlocked')) {
+      document.body.style.overflow = 'hidden';
+    }
+    document.getElementById('pw-input').addEventListener('input', function() {
+      document.getElementById('pw-error').style.display = 'none';
+    });
+    // Override checkPassword to save session
+    const _orig = checkPassword;
+    window.checkPassword = function() {
+      const val = document.getElementById('pw-input').value;
+      if (val === 'Elton') {
+        sessionStorage.setItem('unlocked', '1');
+        document.getElementById('password-screen').style.display = 'none';
+        document.body.style.overflow = '';
+      } else {
+        document.getElementById('pw-error').style.display = 'block';
+        document.getElementById('pw-input').value = '';
+        document.getElementById('pw-input').focus();
+      }
+    };
+    // Auto-unlock if already entered this session
+    if (sessionStorage.getItem('unlocked')) {
+      document.getElementById('password-screen').style.display = 'none';
+      document.body.style.overflow = '';
+    }
   </script>
+
+  <!-- PASSWORD SCREEN -->
+  <div id="password-screen" style="
+    position:fixed;inset:0;z-index:9999;
+    background:var(--forest);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:2rem;">
+    <svg viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg" fill="none" style="width:min(320px,80%);opacity:.4;margin-bottom:2rem;">
+      <g stroke="#D4A84B" stroke-width="1">
+        <line x1="0" y1="40" x2="400" y2="40"/>
+        <line x1="60" y1="40" x2="40" y2="22"/><line x1="40" y1="22" x2="28" y2="18"/>
+        <line x1="70" y1="40" x2="62" y2="22"/><line x1="62" y1="22" x2="55" y2="14"/>
+        <circle cx="28" cy="18" r="3.5" fill="#D4A84B" opacity=".6"/>
+        <line x1="340" y1="40" x2="360" y2="22"/><line x1="360" y1="22" x2="372" y2="18"/>
+        <line x1="330" y1="40" x2="338" y2="22"/><line x1="338" y1="22" x2="345" y2="14"/>
+        <circle cx="372" cy="18" r="3.5" fill="#D4A84B" opacity=".6"/>
+        <line x1="200" y1="40" x2="200" y2="20"/>
+        <ellipse cx="200" cy="16" rx="5" ry="7" fill="#D4A84B" opacity=".35"/>
+      </g>
+    </svg>
+    <p style="font-family:'Jost',sans-serif;font-size:.75rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-lt);margin-bottom:1rem;">Välkommen</p>
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,8vw,4.5rem);font-weight:300;color:#F5ECD7;margin-bottom:.4rem;line-height:1;">
+      Sam <span style="color:var(--gold-lt);font-style:italic;">&amp;</span> Annie
+    </h1>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:#C8B89A;font-size:1.1rem;margin-bottom:2.5rem;">19 juni 2027</p>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:.8rem;width:100%;max-width:280px;">
+      <input type="password" id="pw-input" placeholder="Ange lösenord"
+        onkeydown="if(event.key==='Enter') checkPassword()"
+        style="width:100%;padding:.85rem 1.2rem;border:1px solid rgba(255,255,255,.2);
+        border-radius:3px;background:rgba(255,255,255,.08);color:#F5ECD7;
+        font-family:'Jost',sans-serif;font-size:1rem;text-align:center;
+        letter-spacing:.1em;outline:none;" />
+      <p id="pw-error" style="color:#e07070;font-size:.8rem;display:none;">Fel lösenord, försök igen.</p>
+      <button onclick="checkPassword()"
+        style="width:100%;padding:.85rem;background:var(--gold);color:#fff;border:none;
+        border-radius:3px;font-family:'Jost',sans-serif;font-size:.85rem;
+        letter-spacing:.18em;text-transform:uppercase;cursor:pointer;">
+        Öppna ✦
+      </button>
+    </div>
+  </div>
 </body>
 </html>

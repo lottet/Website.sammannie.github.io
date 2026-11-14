@@ -477,150 +477,6 @@
     <p style="margin-top:.4rem;">Med kärlek till er!</p>
   </footer>
 
-  <script>
-    let attending = null;
-    function setAttend(val) {
-      attending = val;
-      document.getElementById('btn-yes').classList.toggle('active', val === 'yes');
-      document.getElementById('btn-no').classList.toggle('active', val === 'no');
-      document.getElementById('guest-count-group').style.display = (val === 'no') ? 'none' : 'block';
-    }
-    async function submitRsvp() {
-      const name = document.getElementById('rsvp-name').value.trim();
-      const guests = document.getElementById('rsvp-guests').value;
-      const dietary = document.getElementById('rsvp-dietary').value.trim();
-      const errEl = document.getElementById('rsvp-error');
-      if (!name || !attending) { errEl.style.display = 'block'; return; }
-      errEl.style.display = 'none';
-      const entry = { name, attending, guests: attending === 'yes' ? guests : 0, dietary, timestamp: new Date().toISOString() };
-      try { if (window.storage) await window.storage.set('rsvp:' + Date.now(), JSON.stringify(entry)); } catch(e) {}
-      try {
-        const existing = JSON.parse(localStorage.getItem('wedding_rsvps') || '[]');
-        existing.push(entry);
-        localStorage.setItem('wedding_rsvps', JSON.stringify(existing));
-      } catch(e) {}
-      document.getElementById('rsvp-form-wrap').style.display = 'none';
-      document.getElementById('rsvp-success-wrap').style.display = 'block';
-    }
-
-    let photos = [];
-    async function loadPhotos() {
-      try {
-        if (window.storage) {
-          const keys = await window.storage.list('photo:');
-          if (keys && keys.keys && keys.keys.length) {
-            const loaded = [];
-            for (const key of keys.keys) {
-              try { const r = await window.storage.get(key); if (r) loaded.push(JSON.parse(r.value)); } catch(e) {}
-            }
-            photos = loaded;
-          }
-        }
-      } catch(e) {}
-      if (!photos.length) {
-        try { photos = JSON.parse(localStorage.getItem('wedding_photos') || '[]'); } catch(e) { photos = []; }
-      }
-      renderPhotos();
-    }
-    function renderPhotos() {
-      const grid = document.getElementById('photo-grid');
-      const empty = document.getElementById('empty-gallery');
-      grid.innerHTML = '';
-      if (!photos.length) { empty.style.display = 'block'; return; }
-      empty.style.display = 'none';
-      photos.forEach(p => {
-        const div = document.createElement('div'); div.className = 'photo-item';
-        const img = document.createElement('img'); img.src = p.data; img.alt = p.name || 'Bröllopsbild'; img.loading = 'lazy';
-        div.appendChild(img); grid.appendChild(div);
-      });
-    }
-    function resizeImage(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const img = new Image();
-          img.onload = () => {
-            const MAX = 900; let w = img.width, h = img.height;
-            if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
-            else { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
-            const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            resolve({ data: canvas.toDataURL('image/jpeg', 0.72), name: file.name });
-          };
-          img.onerror = reject; img.src = e.target.result;
-        };
-        reader.onerror = reject; reader.readAsDataURL(file);
-      });
-    }
-    async function processFiles(files) {
-      const msg = document.getElementById('uploading-msg'); msg.style.display = 'block';
-      const newPhotos = [...photos];
-      for (const file of Array.from(files).slice(0, 10)) {
-        try {
-          const p = await resizeImage(file);
-          p.id = Date.now() + '-' + Math.random().toString(36).slice(2);
-          newPhotos.push(p);
-          try { if (window.storage) await window.storage.set('photo:' + p.id, JSON.stringify(p)); } catch(e) {}
-        } catch(e) { console.error(e); }
-      }
-      photos = newPhotos;
-      try { localStorage.setItem('wedding_photos', JSON.stringify(newPhotos)); } catch(e) {}
-      msg.style.display = 'none'; renderPhotos();
-    }
-    function handleFileSelect(input) { if (input.files.length) processFiles(input.files); input.value = ''; }
-    function handleDrop(e) {
-      e.preventDefault();
-      document.getElementById('upload-zone').style.borderColor = 'var(--border)';
-      if (e.dataTransfer.files.length) processFiles(e.dataTransfer.files);
-    }
-    loadPhotos();
-
-    function toggleMenu() {
-      document.getElementById('nav-links').classList.toggle('open');
-      document.getElementById('hamburger').classList.toggle('open');
-    }
-    function closeMenu() {
-      document.getElementById('nav-links').classList.remove('open');
-      document.getElementById('hamburger').classList.remove('open');
-    }
-    function checkPassword() {
-      const val = document.getElementById('pw-input').value;
-      if (val === 'Elton') {
-        document.getElementById('password-screen').style.display = 'none';
-        document.body.style.overflow = '';
-      } else {
-        document.getElementById('pw-error').style.display = 'block';
-        document.getElementById('pw-input').value = '';
-        document.getElementById('pw-input').focus();
-      }
-    }
-    // Block scroll until password entered
-    if (!sessionStorage.getItem('unlocked')) {
-      document.body.style.overflow = 'hidden';
-    }
-    document.getElementById('pw-input').addEventListener('input', function() {
-      document.getElementById('pw-error').style.display = 'none';
-    });
-    // Override checkPassword to save session
-    const _orig = checkPassword;
-    window.checkPassword = function() {
-      const val = document.getElementById('pw-input').value;
-      if (val === 'Elton') {
-        sessionStorage.setItem('unlocked', '1');
-        document.getElementById('password-screen').style.display = 'none';
-        document.body.style.overflow = '';
-      } else {
-        document.getElementById('pw-error').style.display = 'block';
-        document.getElementById('pw-input').value = '';
-        document.getElementById('pw-input').focus();
-      }
-    };
-    // Auto-unlock if already entered this session
-    if (sessionStorage.getItem('unlocked')) {
-      document.getElementById('password-screen').style.display = 'none';
-      document.body.style.overflow = '';
-    }
-  </script>
 
   <!-- PASSWORD SCREEN -->
   <div id="password-screen" style="
@@ -662,5 +518,40 @@
       </button>
     </div>
   </div>
+  <script>
+    function toggleMenu() {
+      document.getElementById('nav-links').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+    function closeMenu() {
+      document.getElementById('nav-links').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+
+    // Password screen
+    function unlock() {
+      document.getElementById('password-screen').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    function checkPassword() {
+      const input = document.getElementById('pw-input');
+      if (input.value === 'Elton') {
+        try { sessionStorage.setItem('unlocked', '1'); } catch (e) {}
+        unlock();
+      } else {
+        document.getElementById('pw-error').style.display = 'block';
+        input.value = '';
+        input.focus();
+      }
+    }
+    document.getElementById('pw-input').addEventListener('input', function () {
+      document.getElementById('pw-error').style.display = 'none';
+    });
+
+    let unlocked = false;
+    try { unlocked = sessionStorage.getItem('unlocked') === '1'; } catch (e) {}
+    if (unlocked) unlock();
+    else document.body.style.overflow = 'hidden';
+  </script>
 </body>
 </html>
